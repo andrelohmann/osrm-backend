@@ -196,15 +196,21 @@ Status TilePlugin::HandleRequest(const api::TileParameters &parameters, std::str
         uint8_t forward_datasource = 0;
         uint8_t reverse_datasource = 0;
 
-        if (edge.forward_packed_geometry_id != SPECIAL_EDGEID)
+        if (edge.packed_geometry_id != SPECIAL_EDGEID)
         {
             std::vector<EdgeWeight> forward_weight_vector;
-            facade.GetUncompressedWeights(edge.forward_packed_geometry_id, forward_weight_vector);
+            std::vector<EdgeWeight> reverse_weight_vector;
+
+            facade.GetUncompressedForwardWeights(edge.packed_geometry_id, forward_weight_vector);
             forward_weight = forward_weight_vector[edge.fwd_segment_position];
 
+            facade.GetUncompressedReverseWeights(edge.packed_geometry_id, reverse_weight_vector);
+            BOOST_ASSERT(edge.fwd_segment_position < reverse_weight_vector.size());
+            reverse_weight = reverse_weight_vector[reverse_weight_vector.size() - edge.fwd_segment_position - 1];
+
             std::vector<uint8_t> forward_datasource_vector;
-            facade.GetUncompressedDatasources(edge.forward_packed_geometry_id,
-                                              forward_datasource_vector);
+            facade.GetUncompressedForwardDatasources(edge.packed_geometry_id,
+                                                     forward_datasource_vector);
             forward_datasource = forward_datasource_vector[edge.fwd_segment_position];
 
             if (weight_offsets.find(forward_weight) == weight_offsets.end())
@@ -212,17 +218,6 @@ Status TilePlugin::HandleRequest(const api::TileParameters &parameters, std::str
                 used_weights.push_back(forward_weight);
                 weight_offsets[forward_weight] = used_weights.size() - 1;
             }
-        }
-
-        if (edge.reverse_packed_geometry_id != SPECIAL_EDGEID)
-        {
-            std::vector<EdgeWeight> reverse_weight_vector;
-            facade.GetUncompressedWeights(edge.reverse_packed_geometry_id, reverse_weight_vector);
-
-            BOOST_ASSERT(edge.fwd_segment_position < reverse_weight_vector.size());
-
-            reverse_weight =
-                reverse_weight_vector[reverse_weight_vector.size() - edge.fwd_segment_position - 1];
 
             if (weight_offsets.find(reverse_weight) == weight_offsets.end())
             {
@@ -230,11 +225,13 @@ Status TilePlugin::HandleRequest(const api::TileParameters &parameters, std::str
                 weight_offsets[reverse_weight] = used_weights.size() - 1;
             }
             std::vector<uint8_t> reverse_datasource_vector;
-            facade.GetUncompressedDatasources(edge.reverse_packed_geometry_id,
-                                              reverse_datasource_vector);
+            // TODO have not tested geom zipping with tiles yet
+            facade.GetUncompressedReverseDatasources(edge.packed_geometry_id,
+                                                     reverse_datasource_vector);
             reverse_datasource = reverse_datasource_vector[reverse_datasource_vector.size() -
                                                            edge.fwd_segment_position - 1];
         }
+
         // Keep track of the highest datasource seen so that we don't write unnecessary
         // data to the layer attribute values
         max_datasource_id = std::max(max_datasource_id, forward_datasource);
@@ -291,24 +288,21 @@ Status TilePlugin::HandleRequest(const api::TileParameters &parameters, std::str
 
                 std::string name = facade.GetNameForID(edge.name_id);
 
-                if (edge.forward_packed_geometry_id != SPECIAL_EDGEID)
+                if (edge.packed_geometry_id != SPECIAL_EDGEID)
                 {
                     std::vector<EdgeWeight> forward_weight_vector;
-                    facade.GetUncompressedWeights(edge.forward_packed_geometry_id,
-                                                  forward_weight_vector);
+                    facade.GetUncompressedForwardWeights(edge.packed_geometry_id,
+                                                         forward_weight_vector);
                     forward_weight = forward_weight_vector[edge.fwd_segment_position];
 
                     std::vector<uint8_t> forward_datasource_vector;
-                    facade.GetUncompressedDatasources(edge.forward_packed_geometry_id,
-                                                      forward_datasource_vector);
+                    facade.GetUncompressedForwardDatasources(edge.packed_geometry_id,
+                                                             forward_datasource_vector);
                     forward_datasource = forward_datasource_vector[edge.fwd_segment_position];
-                }
 
-                if (edge.reverse_packed_geometry_id != SPECIAL_EDGEID)
-                {
                     std::vector<EdgeWeight> reverse_weight_vector;
-                    facade.GetUncompressedWeights(edge.reverse_packed_geometry_id,
-                                                  reverse_weight_vector);
+                    facade.GetUncompressedReverseWeights(edge.packed_geometry_id,
+                                                         reverse_weight_vector);
 
                     BOOST_ASSERT(edge.fwd_segment_position < reverse_weight_vector.size());
 
@@ -316,8 +310,8 @@ Status TilePlugin::HandleRequest(const api::TileParameters &parameters, std::str
                                                            edge.fwd_segment_position - 1];
 
                     std::vector<uint8_t> reverse_datasource_vector;
-                    facade.GetUncompressedDatasources(edge.reverse_packed_geometry_id,
-                                                      reverse_datasource_vector);
+                    facade.GetUncompressedReverseDatasources(edge.packed_geometry_id,
+                                                             reverse_datasource_vector);
                     reverse_datasource =
                         reverse_datasource_vector[reverse_datasource_vector.size() -
                                                   edge.fwd_segment_position - 1];

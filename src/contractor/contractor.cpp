@@ -556,102 +556,64 @@ EdgeID Contractor::LoadEdgeExpandedGraph(
                 extractor::QueryNode *u;
                 extractor::QueryNode *v;
 
-                if (leaf_object.forward_packed_geometry_id != SPECIAL_EDGEID)
+                const unsigned forward_begin =
+                    m_geometry_indices.at(leaf_object.packed_geometry_id);
+
+                u = &(internal_to_external_node_map
+                          [m_geometry_list[forward_begin +
+                                           leaf_object.fwd_segment_position]
+                               .node_id]);
+                v = &(internal_to_external_node_map
+                          [m_geometry_list[forward_begin + leaf_object.fwd_segment_position + 1]
+                               .node_id]);
+
+                const double segment_length = util::coordinate_calculation::greatCircleDistance(
+                    util::Coordinate{u->lon, u->lat}, util::Coordinate{v->lon, v->lat});
+
+                auto forward_speed_iter =
+                    find(segment_speed_lookup, Segment{u->node_id, v->node_id});
+                if (forward_speed_iter != segment_speed_lookup.end())
                 {
-                    const unsigned forward_begin =
-                        m_geometry_indices.at(leaf_object.forward_packed_geometry_id);
+                    auto new_segment_weight =
+                        (forward_speed_iter->speed_source.speed > 0)
+                            ? distanceAndSpeedToWeight(segment_length,
+                                                       forward_speed_iter->speed_source.speed)
+                            : INVALID_EDGE_WEIGHT;
 
-                    if (leaf_object.fwd_segment_position == 0)
-                    {
-                        u = &(internal_to_external_node_map[leaf_object.u]);
-                        v = &(
-                            internal_to_external_node_map[m_geometry_list[forward_begin].node_id]);
-                    }
-                    else
-                    {
-                        u = &(internal_to_external_node_map
-                                  [m_geometry_list[forward_begin +
-                                                   leaf_object.fwd_segment_position - 1]
-                                       .node_id]);
-                        v = &(internal_to_external_node_map
-                                  [m_geometry_list[forward_begin + leaf_object.fwd_segment_position]
-                                       .node_id]);
-                    }
-                    const double segment_length = util::coordinate_calculation::greatCircleDistance(
-                        util::Coordinate{u->lon, u->lat}, util::Coordinate{v->lon, v->lat});
+                    m_geometry_list[forward_begin + 1 + leaf_object.fwd_segment_position].forward_weight =
+                        new_segment_weight;
+                    m_geometry_datasource[forward_begin + 1 + leaf_object.fwd_segment_position] =
+                        forward_speed_iter->speed_source.source;
 
-                    auto forward_speed_iter =
-                        find(segment_speed_lookup, Segment{u->node_id, v->node_id});
-                    if (forward_speed_iter != segment_speed_lookup.end())
-                    {
-                        auto new_segment_weight =
-                            (forward_speed_iter->speed_source.speed > 0)
-                                ? distanceAndSpeedToWeight(segment_length,
-                                                           forward_speed_iter->speed_source.speed)
-                                : INVALID_EDGE_WEIGHT;
-                        m_geometry_list[forward_begin + leaf_object.fwd_segment_position].weight =
-                            new_segment_weight;
-                        m_geometry_datasource[forward_begin + leaf_object.fwd_segment_position] =
-                            forward_speed_iter->speed_source.source;
-
-                        // count statistics for logging
-                        counters[forward_speed_iter->speed_source.source] += 1;
-                    }
-                    else
-                    {
-                        // count statistics for logging
-                        counters[LUA_SOURCE] += 1;
-                    }
+                    // count statistics for logging
+                    counters[forward_speed_iter->speed_source.source] += 1;
                 }
-                if (leaf_object.reverse_packed_geometry_id != SPECIAL_EDGEID)
+                else
                 {
-                    const unsigned reverse_begin =
-                        m_geometry_indices.at(leaf_object.reverse_packed_geometry_id);
-                    const unsigned reverse_end =
-                        m_geometry_indices.at(leaf_object.reverse_packed_geometry_id + 1);
+                    // count statistics for logging
+                    counters[LUA_SOURCE] += 1;
+                }
 
-                    int rev_segment_position =
-                        (reverse_end - reverse_begin) - leaf_object.fwd_segment_position - 1;
-                    if (rev_segment_position == 0)
-                    {
-                        u = &(internal_to_external_node_map[leaf_object.v]);
-                        v = &(
-                            internal_to_external_node_map[m_geometry_list[reverse_begin].node_id]);
-                    }
-                    else
-                    {
-                        u = &(
-                            internal_to_external_node_map[m_geometry_list[reverse_begin +
-                                                                          rev_segment_position - 1]
-                                                              .node_id]);
-                        v = &(internal_to_external_node_map
-                                  [m_geometry_list[reverse_begin + rev_segment_position].node_id]);
-                    }
-                    const double segment_length = util::coordinate_calculation::greatCircleDistance(
-                        util::Coordinate{u->lon, u->lat}, util::Coordinate{v->lon, v->lat});
+                auto reverse_speed_iter =
+                    find(segment_speed_lookup, Segment{v->node_id, u->node_id});
+                if (reverse_speed_iter != segment_speed_lookup.end())
+                {
+                    auto new_segment_weight =
+                        (reverse_speed_iter->speed_source.speed > 0)
+                            ? distanceAndSpeedToWeight(segment_length,
+                                                       reverse_speed_iter->speed_source.speed)
+                            : INVALID_EDGE_WEIGHT;
+                    m_geometry_list[forward_begin + leaf_object.fwd_segment_position].reverse_weight =
+                        new_segment_weight;
+                    m_geometry_datasource[forward_begin + leaf_object.fwd_segment_position] =
+                        reverse_speed_iter->speed_source.source;
 
-                    auto reverse_speed_iter =
-                        find(segment_speed_lookup, Segment{u->node_id, v->node_id});
-                    if (reverse_speed_iter != segment_speed_lookup.end())
-                    {
-                        auto new_segment_weight =
-                            (reverse_speed_iter->speed_source.speed > 0)
-                                ? distanceAndSpeedToWeight(segment_length,
-                                                           reverse_speed_iter->speed_source.speed)
-                                : INVALID_EDGE_WEIGHT;
-                        m_geometry_list[reverse_begin + rev_segment_position].weight =
-                            new_segment_weight;
-                        m_geometry_datasource[reverse_begin + rev_segment_position] =
-                            reverse_speed_iter->speed_source.source;
-
-                        // count statistics for logging
-                        counters[reverse_speed_iter->speed_source.source] += 1;
-                    }
-                    else
-                    {
-                        // count statistics for logging
-                        counters[LUA_SOURCE] += 1;
-                    }
+                    // count statistics for logging
+                    counters[reverse_speed_iter->speed_source.source] += 1;
+                }
+                else
+                {
+                    counters[LUA_SOURCE] += 1;
                 }
             }
         }); // parallel_for_each
@@ -701,7 +663,7 @@ EdgeID Contractor::LoadEdgeExpandedGraph(
                               sizeof(unsigned));
         geometry_stream.write(reinterpret_cast<char *>(&(m_geometry_list[0])),
                               number_of_compressed_geometries *
-                                  sizeof(extractor::CompressedEdgeContainer::CompressedEdge));
+                                  sizeof(extractor::CompressedEdgeContainer::OnewayCompressedEdge));
     };
 
     const auto save_datasource_indexes = [&] {
