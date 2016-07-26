@@ -53,7 +53,7 @@ var OSRMBaseLoader = class {
                        retryCount++;
                        setTimeout(connectWithRetry, 100);
                    } else {
-                       callback(new Error('Could not connect to osrm-routed after three retires'));
+                       callback(new Error('Could not connect to osrm-routed after three retries'));
                    }
                });
         };
