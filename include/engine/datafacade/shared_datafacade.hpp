@@ -563,7 +563,6 @@ class SharedDataFacade final : public BaseDataFacade
         std::for_each(m_geometry_list.begin() + begin,
                       m_geometry_list.begin() + end,
                       [&](const osrm::extractor::CompressedEdgeContainer::CompressedEdge &edge) {
-                          BOOST_ASSERT(edge.forward_weight != INVALID_EDGE_WEIGHT);
                           result_weights.emplace_back(edge.forward_weight);
                       });
     }
@@ -581,7 +580,6 @@ class SharedDataFacade final : public BaseDataFacade
         {
             const osrm::extractor::CompressedEdgeContainer::CompressedEdge &edge =
                 m_geometry_list.at(i);
-            BOOST_ASSERT(edge.reverse_weight != INVALID_EDGE_WEIGHT);
             result_weights.emplace_back(edge.reverse_weight);
         }
     }
