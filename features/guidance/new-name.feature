@@ -164,3 +164,57 @@ Feature: New-Name Instructions
             | waypoints | route                    | turns                           |
             | a,e       | name,with-name,with-name | depart,new name straight,arrive |
             | b,e       | with-name,with-name      | depart,arrive                   |
+
+    Scenario: Both Name and Ref Empty
+        Given the node map
+            | a |  | b |  | c |
+
+        And the ways
+            | nodes | name | ref |
+            | ab    |      |     |
+            | bc    |      |     |
+
+        When I route I should get
+            | waypoints | route | turns         |
+            | a,c       | ,     | depart,arrive |
+
+    @todo
+    Scenario: Same Name, Ref Extended
+        Given the node map
+            | a |  | b |  | c |
+
+        And the ways
+            | nodes | name | ref   |
+            | ab    | A    | B1    |
+            | bc    | C    | B1;B2 |
+
+        When I route I should get
+            | waypoints | route | turns         |
+            | a,c       | ,     | depart,arrive |
+
+    @todo
+    Scenario: Same Name, Ref Removed
+        Given the node map
+            | a |  | b |  | c |
+
+        And the ways
+            | nodes | name | ref   |
+            | ab    | A    | B1;B2 |
+            | bc    | C    | B1    |
+
+        When I route I should get
+            | waypoints | route | turns         |
+            | a,c       | ,     | depart,arrive |
+
+    Scenario: Name Removed, Ref Extended
+        Given the node map
+            | a |  | b |  | c |
+
+        And the ways
+            | nodes | name | ref   |
+            | ab    | A    | B1    |
+            | bc    |      | B1;B2 |
+
+        When I route I should get
+            | waypoints | route | turns         |
+            | a,c       | A,    | depart,arrive |
