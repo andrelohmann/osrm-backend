@@ -164,41 +164,19 @@ inline std::pair<std::string, std::string> getPrefixAndSuffix(const std::string 
     return result;
 }
 
-inline bool requiresNameAnnounced(const std::string &from,
-                                  const std::string &to,
+inline bool requiresNameAnnounced(const std::string &from_name,
+                                  const std::string &from_ref,
+                                  const std::string &to_name,
+                                  const std::string &to_ref,
                                   const SuffixTable &suffix_table)
 {
     // first is empty and the second is not
-    if (from.empty() && !to.empty())
+    if ((from_name.empty() && from_ref.empty()) && !(to_name.empty() && to_ref.empty()))
         return true;
 
     // FIXME, handle in profile to begin with?
-    // this uses the encoding of references in the profile, which is very BAD
     // Input for this function should be a struct separating streetname, suffix (e.g. road,
     // boulevard, North, West ...), and a list of references
-    std::string from_name;
-    std::string from_ref;
-    std::string to_name;
-    std::string to_ref;
-
-    // Split from the format "{name} ({ref})" -> name, ref
-    auto split = [](const std::string &name, std::string &out_name, std::string &out_ref) {
-        const auto ref_begin = name.find_first_of('(');
-        if (ref_begin != std::string::npos)
-        {
-            if (ref_begin != 0)
-                out_name = name.substr(0, ref_begin - 1);
-            const auto ref_end = name.find_first_of(')');
-            out_ref = name.substr(ref_begin + 1, ref_end - ref_begin - 1);
-        }
-        else
-        {
-            out_name = name;
-        }
-    };
-
-    split(from, from_name, from_ref);
-    split(to, to_name, to_ref);
 
     // check similarity of names
     const auto names_are_empty = from_name.empty() && to_name.empty();
@@ -210,6 +188,7 @@ inline bool requiresNameAnnounced(const std::string &from,
 
         const auto first_prefix_and_suffixes = getPrefixAndSuffix(first);
         const auto second_prefix_and_suffixes = getPrefixAndSuffix(second);
+
         // reverse strings, get suffices and reverse them to get prefixes
         const auto checkTable = [&](const std::string &str) {
             return str.empty() || suffix_table.isSuffix(str);

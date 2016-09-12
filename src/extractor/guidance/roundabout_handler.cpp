@@ -243,7 +243,9 @@ RoundaboutType RoundaboutHandler::getRoundaboutType(const NodeID nid) const
                         {
 
                             if (!requiresNameAnnounced(name_table.GetNameForID(name_id),
+                                                       name_table.GetRefForID(name_id),
                                                        name_table.GetNameForID(edge_data.name_id),
+                                                       name_table.GetRefForID(edge_data.name_id),
                                                        street_name_suffix_table))
                             {
                                 add = false;
