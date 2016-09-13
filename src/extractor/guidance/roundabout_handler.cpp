@@ -242,11 +242,12 @@ RoundaboutType RoundaboutHandler::getRoundaboutType(const NodeID nid) const
                         for (auto name_id : roundabout_name_ids)
                         {
 
-                            if (!requiresNameAnnounced(name_table.GetNameForID(name_id),
-                                                       name_table.GetRefForID(name_id),
-                                                       name_table.GetNameForID(edge_data.name_id),
-                                                       name_table.GetRefForID(edge_data.name_id),
-                                                       street_name_suffix_table))
+                            if (!util::guidance::requiresNameAnnounced(
+                                    name_table.GetNameForID(name_id),
+                                    name_table.GetRefForID(name_id),
+                                    name_table.GetNameForID(edge_data.name_id),
+                                    name_table.GetRefForID(edge_data.name_id),
+                                    street_name_suffix_table))
                             {
                                 add = false;
                                 break;

@@ -4,6 +4,7 @@
 
 #include "util/coordinate_calculation.hpp"
 #include "util/guidance/toolkit.hpp"
+#include "util/guidance/toolkit.hpp"
 #include "util/simple_logger.hpp"
 
 #include <algorithm>
@@ -90,11 +91,11 @@ TurnInstruction IntersectionHandler::getInstructionForObvious(const std::size_t 
         const auto &in_data = node_based_graph.GetEdgeData(via_edge);
         const auto &out_data = node_based_graph.GetEdgeData(road.turn.eid);
         if (in_data.name_id != out_data.name_id &&
-            requiresNameAnnounced(name_table.GetNameForID(in_data.name_id),
-                                  name_table.GetRefForID(in_data.name_id),
-                                  name_table.GetNameForID(out_data.name_id),
-                                  name_table.GetRefForID(out_data.name_id),
-                                  street_name_suffix_table))
+            util::guidance::requiresNameAnnounced(name_table.GetNameForID(in_data.name_id),
+                                                  name_table.GetRefForID(in_data.name_id),
+                                                  name_table.GetNameForID(out_data.name_id),
+                                                  name_table.GetRefForID(out_data.name_id),
+                                                  street_name_suffix_table))
         {
             // obvious turn onto a through street is a merge
             if (through_street)
