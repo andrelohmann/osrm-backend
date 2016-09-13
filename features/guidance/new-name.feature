@@ -178,7 +178,6 @@ Feature: New-Name Instructions
             | waypoints | route | turns         |
             | a,c       | ,     | depart,arrive |
 
-    @todo
     Scenario: Same Name, Ref Extended
         Given the node map
             | a |  | b |  | c |
@@ -189,10 +188,9 @@ Feature: New-Name Instructions
             | bc    | C    | B1;B2 |
 
         When I route I should get
-            | waypoints | route | turns         |
-            | a,c       | ,     | depart,arrive |
+            | waypoints | route | turns                           |
+            | a,c       | A,C,C | depart,new name straight,arrive |
 
-    @todo
     Scenario: Same Name, Ref Removed
         Given the node map
             | a |  | b |  | c |
@@ -203,8 +201,8 @@ Feature: New-Name Instructions
             | bc    | C    | B1    |
 
         When I route I should get
-            | waypoints | route | turns         |
-            | a,c       | ,     | depart,arrive |
+            | waypoints | route | turns                           |
+            | a,c       | A,C,C | depart,new name straight,arrive |
 
     Scenario: Name Removed, Ref Extended
         Given the node map
@@ -218,3 +216,16 @@ Feature: New-Name Instructions
         When I route I should get
             | waypoints | route | turns         |
             | a,c       | A,    | depart,arrive |
+
+    Scenario: Name Added, Ref Removed
+        Given the node map
+            | a |  | b |  | c |
+
+        And the ways
+            | nodes | name | ref   |
+            | ab    |      | B1    |
+            | bc    | A    |       |
+
+        When I route I should get
+            | waypoints | route | turns         |
+            | a,c       | ,A    | depart,arrive |
