@@ -243,7 +243,11 @@ inline bool requiresNameAnnounced(const std::string &from_name,
         (names_are_equal && refs_are_empty) || (ref_is_contained && name_is_removed) ||
         (names_are_equal && ref_is_removed) || is_suffix_change;
 
-    return !obvious_change;
+    const auto needs_announce =
+        // " (Ref)" -> "Name "
+        (from_name.empty() && !from_ref.empty() && !to_name.empty() && to_ref.empty());
+
+    return !obvious_change || needs_announce;
 }
 
 // To simplify handling of Left/Right hand turns, we can mirror turns and write an intersection

@@ -227,5 +227,5 @@ Feature: New-Name Instructions
             | bc    | A    |       |
 
         When I route I should get
-            | waypoints | route | turns         |
-            | a,c       | ,A    | depart,arrive |
+            | waypoints | route | turns                           |
+            | a,c       | ,A,A  | depart,new name straight,arrive |
