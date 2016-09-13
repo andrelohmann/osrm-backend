@@ -153,6 +153,8 @@ inline std::pair<std::string, std::string> getPrefixAndSuffix(const std::string 
     return result;
 }
 
+// Note: there is an overload without suffix checking below.
+// (that's the reason we template the suffix table here)
 template <typename SuffixTable>
 inline bool requiresNameAnnounced(const std::string &from_name,
                                   const std::string &from_ref,
@@ -238,6 +240,22 @@ inline bool requiresNameAnnounced(const std::string &from_name,
         (from_name.empty() && !from_ref.empty() && !to_name.empty() && to_ref.empty());
 
     return !obvious_change || needs_announce;
+}
+
+// Overload without suffix checking
+inline bool requiresNameAnnounced(const std::string &from_name,
+                                  const std::string &from_ref,
+                                  const std::string &to_name,
+                                  const std::string &to_ref)
+{
+    // Dummy since we need to provide a SuffixTable but do not have the data for it.
+    // (Guidance Post-Processing does not keep the suffix table around at the moment)
+    struct NopSuffixTable final
+    {
+        bool isSuffix(const std::string &) const { return false; }
+    } static const table;
+
+    return requiresNameAnnounced(from_name, from_ref, to_name, to_ref, table);
 }
 
 } // namespace guidance
