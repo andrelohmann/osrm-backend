@@ -241,8 +241,8 @@ Feature: New-Name Instructions
             | bc    | Central Expressway       | US 75 | motorway |
 
         When I route I should get
-            | waypoints | route                                                       | turns         |
-            | a,c       | North Central Expressway (US 75),Central Expressway (US 75) | depart,arrive |
+            | waypoints | route                                                          | turns                           |
+            | a,c       | North Central Expressway,Central Expressway,Central Expressway | depart,new name straight,arrive |
 
     Scenario: Prefix Change
         Given the node map
@@ -254,8 +254,8 @@ Feature: New-Name Instructions
             | cb    | Central Expressway       | US 75 | motorway |
 
         When I route I should get
-            | waypoints | route                                                       | turns         |
-            | c,a       | Central Expressway (US 75),North Central Expressway (US 75) | depart,arrive |
+            | waypoints | route                                                                | turns                           |
+            | c,a       | Central Expressway,North Central Expressway,North Central Expressway | depart,new name straight,arrive |
 
     Scenario: No Name, Same Reference
         Given the node map
@@ -267,8 +267,8 @@ Feature: New-Name Instructions
             | bc    |                    | US 75 | motorway |
 
         When I route I should get
-            | waypoints | route                               | turns         |
-            | a,c       | Central Expressway (US 75), (US 75) | depart,arrive |
+            | waypoints | route               | turns         |
+            | a,c       | Central Expressway, | depart,arrive |
 
     Scenario: No Name, Same Reference
         Given the node map
@@ -280,8 +280,8 @@ Feature: New-Name Instructions
             | bc    | Central Expressway | US 75 | motorway |
 
         When I route I should get
-            | waypoints | route                               | turns         |
-            | a,c       | (US 75), Central Expressway (US 75) | depart,arrive |
+            | waypoints | route               | turns         |
+            | a,c       | ,Central Expressway | depart,arrive |
 
     Scenario: No Name, Same Reference
         Given the node map
@@ -293,8 +293,8 @@ Feature: New-Name Instructions
             | bc    |      | US 75       | motorway |
 
         When I route I should get
-            | waypoints | route                  | turns         |
-            | a,c       | (US 75;US 69), (US 75) | depart,arrive |
+            | waypoints | route | turns         |
+            | a,c       | ,     | depart,arrive |
 
     Scenario: No Name, Same Reference
         Given the node map
@@ -306,8 +306,8 @@ Feature: New-Name Instructions
             | bc    |      | US 75       | motorway |
 
         When I route I should get
-            | waypoints | route                  | turns         |
-            | a,c       | (US 69;US 75), (US 75) | depart,arrive |
+            | waypoints | route | turns         |
+            | a,c       | ,     | depart,arrive |
 
     Scenario: No Name, Same Reference
         Given the node map
@@ -319,8 +319,8 @@ Feature: New-Name Instructions
             | bc    |      | US 75;US 69 | motorway |
 
         When I route I should get
-            | waypoints | route                  | turns         |
-            | a,c       | (US 75), (US 75;US 69) | depart,arrive |
+            | waypoints | route | turns         |
+            | a,c       | ,     | depart,arrive |
 
     Scenario: No Name, Same Reference
         Given the node map
@@ -332,5 +332,5 @@ Feature: New-Name Instructions
             | bc    |      | US 69;US 75 | motorway |
 
         When I route I should get
-            | waypoints | route                  | turns         |
-            | a,c       | (US 75), (US 69;US 75) | depart,arrive |
+            | waypoints | route | turns         |
+            | a,c       | ,     | depart,arrive |
